@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class FaltaController extends Controller
 {
@@ -62,7 +63,10 @@ class FaltaController extends Controller
         $falta->fecha = $fechaActual;
         $falta->docentes_id = $persona->id;
         $falta->save();
-
+        Http::post('https://colegio-bi-microservicio.azurewebsites.net/api/falta', [
+            "motivo" => $request->motivo,
+            "ci" => $persona->ci
+        ]);
         return redirect()->route("faltas.index")->with("info", "Nueva falta agregado!!!");
     }
 

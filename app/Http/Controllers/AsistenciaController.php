@@ -87,11 +87,11 @@ class AsistenciaController extends Controller
 
         $fechaActual = Carbon::now();
         $horaActual = Carbon::now()->format('H:i:s');
-
         $diferenciaMinutos = $this->calcularDiferenciaHoras($horaIngreseColegio, $horaActual);
 
         $docente_id = Auth::user()->id;
         $soloFecha = $fechaActual->toDateString();
+        $fechasinHora = $fecha->format('Y-m-d');
 
         $sqlAsistencia = "select *
                         from asistencias
@@ -99,35 +99,39 @@ class AsistenciaController extends Controller
                         DATE(fecha) = ? and
                         docentes_id = ?;";
         $marcoAsistencia = DB::select($sqlAsistencia, [$soloFecha, $docente_id]);
-
         if(count($marcoAsistencia) === 1){
             $asistencia = Asistencia::find($marcoAsistencia[0]->id);
             $asistencia->hora_salida = $horaActual;
             $asistencia->update();                    
-            return response()->json("Hora salida actualizada");
+            return response()->json("Asistencia actualizada");
         }
         else{
             $asistencia = new Asistencia();
             $asistencia->tiempo_retraso = $diferenciaMinutos;
             $asistencia->hora_ingreso = $horaActual;
             $asistencia->hora_salida = $horaActual;
-            $asistencia->fecha = $fechaActual;
+            $asistencia->fecha = $fechasinHora;
             $asistencia->docentes_id = $docente_id;
             $asistencia->save();
              // Recupera el ID del registro recién creado
-             $idAsistenciaCreada = $asistencia->id;
         
-            $data = Http::post('https://colegio-bi-microservicio.azurewebsites.net/api/asistencias', [
-                 'id' => $idAsistenciaCreada,
+            $data = Http::post('https://colegio-bi-microservicio.azurewebsites.net/api/asistencia', [
                  'tiempo_retraso' => $diferenciaMinutos,
                  'hora_ingreso' => $horaActual,
                  'hora_salida' => $horaActual,
                  'fecha' => $fechaActual,
                  'docentes_id' => $docente_id
              ]);
-             dd($data->json());
-            return response()->json("Asistencia creada");
+             //si es created 201
+             if($data->successful() ){
+                return response()->json("Asistencia creada");
+             }else {
+                return response()->json("No creada");
+             }
+            
         }
+
+        return response()->json("No hace nada");
 
     }
 

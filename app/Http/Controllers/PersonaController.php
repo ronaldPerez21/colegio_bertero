@@ -119,26 +119,21 @@ class PersonaController extends Controller
             $docente->photo = $url;
             $docente->save();
             $response = Http::post('https://colegio-bi-microservicio.azurewebsites.net/api/docente/create', [
-                'id' => $persona->id,
+                
                 'nombres' => $request->nombres,
                 'apellidos' => $request->apellidos,
                 'ci' => $request->ci,
             ]);
-            $horarioLaboral = Http::get('https://colegio-bi-microservicio.azurewebsites.net/api/horario-laboral/ultimo-id');
-            if($horarioLaboral->ok()){
-                $data = $horarioLaboral->json();
-                $horarioLaboral_id = $data["max"];
             
                 for ($i = 1; $i <= 5; $i++) {
-                    $horarioLaboral_id = $horarioLaboral_id + 1;
                     Http::post('https://colegio-bi-microservicio.azurewebsites.net/api/horario-laboral', [
-                        'id' => $horarioLaboral_id,
-                        'docente' => $persona->id,
+                        
+                        'docente' => $persona->ci,
                         'horarioDia' => $i
                     ]
                     );
                 }
-            }
+
 
         }
 

@@ -51,6 +51,7 @@ function initMap() {
                     )
                         .then(res => res.json())
                         .then(data => {
+                            console.log(data);
                             alert(data);
                         })
                         .catch(error => console.error('Error al realizar la búsqueda:', error));
